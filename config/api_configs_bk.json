@@ -1,0 +1,55 @@
+  [
+      {
+          "job": "1",
+          "name": "선물옵션 시세",
+          "endpoint": "/inquire-price",
+          "tr_id": "FHMIF10000000",
+          "fixed_params": {
+              "FID_COND_MRKT_DIV_CODE": "F",
+              # F: 지수선물, O:지수옵션 JF: 주식선물, JO:주식옵션, CF: 상품선물(금),금리선물(국채),통화선물(달러) CM: 야간선물, EU: 야간옵션
+          }
+      },
+      {
+          "job": "2",
+          "name": "선물옵션기간별시세(일/주/월/년)",
+          "endpoint": "/inquire-daily-fuopchartprice",
+          "tr_id": "FHKIF03020100",
+          "fixed_params": {
+              "FID_COND_MRKT_DIV_CODE": "F",
+              # F: 지수선물, O:지수옵션 JF: 주식선물, JO:주식옵션, CF: 상품선물(금),금리선물(국채),통화선물(달러) CM: 야간선물, EU: 야간옵션
+              "FID_INPUT_DATE_1": "20250705",
+              "FID_INPUT_DATE_2": "20250711",
+              "FID_PERIOD_DIV_CODE": "D"  # D:일봉 W:주봉, M:월봉, Y:년봉
+          }
+      },
+      {
+          "job": "3",
+          "name": "선물옵션 분봉조회",
+          "endpoint": "/inquire-time-fuopchartprice",
+          "tr_id": "FHKIF03020200",
+          "fixed_params": {
+              "FID_COND_MRKT_DIV_CODE": "F",
+              # F: 지수선물, O:지수옵션 JF: 주식선물, JO:주식옵션, CF: 상품선물(금),금리선물(국채),통화선물(달러) CM: 야간선물, EU: 야간옵션
+              "FID_HOUR_CLS_CODE": "3600",  # FID 시간 구분 코드(30: 30초, 60: 1분, 3600: 1시간)
+              "FID_PW_DATA_INCU_YN": "Y",  # Y(과거) / N (당일)
+              "FID_FAKE_TICK_INCU_YN": "N",  # N으로 입력
+              "FID_INPUT_DATE_1": "20250705",
+              # 입력 날짜 기준으로 이전 기간 조회(YYYYMMDD) ex) 20230908 입력 시, 2023년 9월 8일부터 일자 역순으로 조회
+              "FID_INPUT_HOUR_1": "093000"  # 입력 시간 기준으로 이전 시간 조회(HHMMSS) ex) 093000 입력 시, 오전 9시 30분부터 역순으로 분봉 조회
+          }
+      },
+      {
+          "job": "4",
+          "name": "국내선물 기초자산 시세",
+          "endpoint": "/display-board-top",
+          "tr_id": "FHPIF05030000",
+          "fixed_params": {
+              "FID_COND_MRKT_DIV_CODE": "F",
+              # F: 지수선물, O:지수옵션 JF: 주식선물, JO:주식옵션, CF: 상품선물(금),금리선물(국채),통화선물(달러) CM: 야간선물, EU: 야간옵션
+              "FID_COND_MRKT_DIV_CODE1": "",  # 공백
+              "FID_COND_SCR_DIV_CODE": "",  # 공백
+              "FID_MTRT_CNT": "",  # 공백
+              "FID_COND_MRKT_CLS_CODE": ""  # 공백
+          }
+      }
+  ]

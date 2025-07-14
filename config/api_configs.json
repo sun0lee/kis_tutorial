@@ -1,0 +1,50 @@
+  [
+      {
+          "job": "1",
+          "name": "선물옵션 시세",
+          "endpoint": "/inquire-price",
+          "tr_id": "FHMIF10000000",
+          "fixed_params": {
+              "FID_COND_MRKT_DIV_CODE": "F"
+          }
+      },
+      {
+          "job": "2",
+          "name": "선물옵션기간별시세(일/주/월/년)",
+          "endpoint": "/inquire-daily-fuopchartprice",
+          "tr_id": "FHKIF03020100",
+          "fixed_params": {
+              "FID_COND_MRKT_DIV_CODE": "F",
+              "FID_INPUT_DATE_1": "20150705",
+              "FID_INPUT_DATE_2": "20151231",
+              "FID_PERIOD_DIV_CODE": "D"
+          }
+      },
+      {
+          "job": "3",
+          "name": "선물옵션 분봉조회",
+          "endpoint": "/inquire-time-fuopchartprice",
+          "tr_id": "FHKIF03020200",
+          "fixed_params": {
+              "FID_COND_MRKT_DIV_CODE": "F",
+              "FID_HOUR_CLS_CODE": "3600",
+              "FID_PW_DATA_INCU_YN": "Y",
+              "FID_FAKE_TICK_INCU_YN": "N",
+              "FID_INPUT_DATE_1": "20250731",
+              "FID_INPUT_HOUR_1": "093000"
+          }
+      },
+      {
+          "job": "4",
+          "name": "국내선물 기초자산 시세",
+          "endpoint": "/display-board-top",
+          "tr_id": "FHPIF05030000",
+          "fixed_params": {
+              "FID_COND_MRKT_DIV_CODE": "F",
+              "FID_COND_MRKT_DIV_CODE1": "",
+              "FID_COND_SCR_DIV_CODE": "",
+              "FID_MTRT_CNT": "",
+              "FID_COND_MRKT_CLS_CODE": ""
+          }
+      }
+  ]
