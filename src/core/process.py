@@ -29,23 +29,23 @@ class MarketDataManager:
             print(f"=== API 호출 설정: '{config['job']}' : '{config['name']}' 처리 시작 ===")
             print(f"============================================================\n")
 
-            current_endpoint = config["endpoint"]
-            current_tr_id = config["tr_id"]
-            current_fixed_params = config["fixed_params"]
+            cur_endpoint = config["endpoint"]
+            cur_tr_id = config["tr_id"]
+            cur_params = config["params"]
 
             for code in self.code_list:
                 print(f"  --- 종목 코드: {code} (작업: {config['name']}) 데이터 처리 시작 ---")
 
-                params_for_call = current_fixed_params.copy()
-                params_for_call["FID_INPUT_ISCD"] = code
+                params = cur_params.copy()
+                params["FID_INPUT_ISCD"] = code
 
-                data = self.kis_client._call_api(current_endpoint, current_tr_id, params_for_call)
+                data = self.kis_client._call_api(cur_endpoint, cur_tr_id, params)
 
                 if data:
                     print(data)
 
                     print(f" [DatabaseManager] 응답 데이터를 SQLite 데이터베이스에 적재합니다...")
-                    rowid = self.db_manager.insert(current_tr_id, code, data)
+                    rowid = self.db_manager.insert(cur_tr_id, code, params, data)
                     print(f"  데이터베이스에 rowid = {rowid}의 데이터가 적재되었습니다.")
                 else:
                     print(f" API 호출이 실패하여 종목코드 {code} (작업: {config['name']}) 데이터를 적재하지 않습니다.")
