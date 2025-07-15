@@ -8,14 +8,15 @@ kis_client = KisClient()
 db = DatabaseManager()
 
 # 종목코드
-code_list = [ "101W09"]
+# code_list = [ "201W09412", "301W09412"]
+inst_list = db.get_inst_list()
 
 # api 설정 : json file에서 관리 : config > api_configs.json
 with open(API_CONFIG_PATH, 'r', encoding='utf-8') as f:
     api_configs = json.load(f)
 
 # 실행 객체
-manager = MarketDataManager(kis_client, db, api_configs, code_list)
+manager = MarketDataManager(kis_client, db, api_configs, inst_list)
 
 
 if __name__ == "__main__":

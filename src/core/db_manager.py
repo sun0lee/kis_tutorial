@@ -1,5 +1,6 @@
 import sqlite3
 import json
+from typing  import List, Dict, Any
 from datetime import datetime
 from core import DATA_PATH
 
@@ -19,7 +20,43 @@ class DatabaseManager:
         self.db_path = DATA_PATH
 
     def _get_connection(self):
-        return sqlite3.connect(self.db_path)
+        conn = sqlite3.connect(self.db_path)
+        conn.row_factory = sqlite3.Row  # 컬럼 이름으로 접근 가능하게 설정
+        # print(f"[DEBUG] _get_connection: 연결 객체 생성됨: {conn}")  # <-- 추가
+        return conn
+
+    def get_inst_list(self) -> List[Dict[str, Any]]:
+        insts = []
+        conn = None
+        try:
+            conn = self._get_connection()
+            cursor = conn.cursor()
+            # print(f"[DEBUG] get_inst_list: 커서 객체 생성됨: {cursor}")
+
+            query = "SELECT shrn_iscd, mrkt_div, kor_name FROM mst_inst WHERE use_yn = 'Y'"
+            cursor.execute(query)
+
+            rows = cursor.fetchall()
+            # print(f"[DEBUG] get_inst_list: 조회된 행의 수: {len(rows)}")
+
+            if not rows:
+                print("경고: 'mst_inst' 테이블에 'use_yn = 'Y''인 종목이 없습니다. API 호출 대상 없음.")
+                return []
+
+            column_names = rows[0].keys()  # 첫 번째 행에서 컬럼 이름을 가져옵니다.
+            # print(f"[DEBUG] get_inst_list: 컬럼 이름: {column_names}")
+
+            for row in rows:
+                item = {col_name: row[col_name] for col_name in column_names}
+                insts.append(item)
+
+        except Exception as e:
+            print(f"ERROR: mst_inst 테이블에서 종목 조회 중 오류 발생: {e}")
+            insts = []  # 오류 발생 시 빈 리스트 반환
+        finally:
+            if conn:
+                conn.close()
+        return insts
 
     def insert(self, response_type: str, symbol: str, params: dict, raw_data: dict) -> int:
 
