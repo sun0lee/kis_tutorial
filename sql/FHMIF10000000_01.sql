@@ -1,0 +1,55 @@
+INSERT INTO RST_FHMIF10000000_01 (
+    raw_api_id,
+    req_cond_mrkt_div_code, req_input_iscd,
+    base_date,
+    hts_kor_isnm, futs_prpr, futs_prdy_vrss, prdy_vrss_sign, futs_prdy_clpr,
+    futs_prdy_ctrt, acml_vol, acml_tr_pbmn, hts_otst_stpl_qty, otst_stpl_qty_icdc,
+    futs_oprc, futs_hgpr, futs_lwpr, futs_mxpr, futs_llam, basis, futs_sdpr,
+    hts_thpr, dprt, crbr_aply_mxpr, crbr_aply_llam, futs_last_tr_date, hts_rmnn_dynu,
+    futs_lstn_medm_hgpr, futs_lstn_medm_lwpr, delta_val, gama, theta, vega, rho,
+    hist_vltl, hts_ints_vltl, mrkt_basis, acpr, inserted_at
+)
+SELECT
+    r.id AS raw_api_id,
+    json_extract(r.param, '$.FID_COND_MRKT_DIV_CODE'),
+    json_extract(r.param, '$.FID_INPUT_ISCD'),
+    r.created_at AS base_date, -- rst_raw_api.created_at 값 사용
+    json_extract(r.data, '$.output1.hts_kor_isnm'),
+    CAST(json_extract(r.data, '$.output1.futs_prpr') AS REAL),
+    CAST(json_extract(r.data, '$.output1.futs_prdy_vrss') AS REAL),
+    json_extract(r.data, '$.output1.prdy_vrss_sign'),
+    CAST(json_extract(r.data, '$.output1.futs_prdy_clpr') AS REAL),
+    CAST(json_extract(r.data, '$.output1.futs_prdy_ctrt') AS REAL),
+    CAST(json_extract(r.data, '$.output1.acml_vol') AS INTEGER),
+    CAST(json_extract(r.data, '$.output1.acml_tr_pbmn') AS INTEGER),
+    CAST(json_extract(r.data, '$.output1.hts_otst_stpl_qty') AS INTEGER),
+    CAST(json_extract(r.data, '$.output1.otst_stpl_qty_icdc') AS INTEGER),
+    CAST(json_extract(r.data, '$.output1.futs_oprc') AS REAL),
+    CAST(json_extract(r.data, '$.output1.futs_hgpr') AS REAL),
+    CAST(json_extract(r.data, '$.output1.futs_lwpr') AS REAL),
+    CAST(json_extract(r.data, '$.output1.futs_mxpr') AS REAL),
+    CAST(json_extract(r.data, '$.output1.futs_llam') AS REAL),
+    CAST(json_extract(r.data, '$.output1.basis') AS REAL),
+    CAST(json_extract(r.data, '$.output1.futs_sdpr') AS REAL),
+    CAST(json_extract(r.data, '$.output1.hts_thpr') AS REAL),
+    CAST(json_extract(r.data, '$.output1.dprt') AS REAL),
+    CAST(json_extract(r.data, '$.output1.crbr_aply_mxpr') AS REAL),
+    CAST(json_extract(r.data, '$.output1.crbr_aply_llam') AS REAL),
+    json_extract(r.data, '$.output1.futs_last_tr_date'),
+    CAST(json_extract(r.data, '$.output1.hts_rmnn_dynu') AS INTEGER),
+    CAST(json_extract(r.data, '$.output1.futs_lstn_medm_hgpr') AS REAL),
+    CAST(json_extract(r.data, '$.output1.futs_lstn_medm_lwpr') AS REAL),
+    CAST(json_extract(r.data, '$.output1.delta_val') AS REAL),
+    CAST(json_extract(r.data, '$.output1.gama') AS REAL),
+    CAST(json_extract(r.data, '$.output1.theta') AS REAL),
+    CAST(json_extract(r.data, '$.output1.vega') AS REAL),
+    CAST(json_extract(r.data, '$.output1.rho') AS REAL),
+    CAST(json_extract(r.data, '$.output1.hist_vltl') AS REAL),
+    CAST(json_extract(r.data, '$.output1.hts_ints_vltl') AS REAL),
+    CAST(json_extract(r.data, '$.output1.mrkt_basis') AS REAL),
+    CAST(json_extract(r.data, '$.output1.acpr') AS REAL),
+    STRFTIME('%Y-%m-%dT%H:%M:%f', 'now')
+FROM
+    rst_raw_api AS r
+WHERE
+    r.response_type = 'FHMIF10000000' AND json_extract(r.data, '$.output1') IS NOT NULL;

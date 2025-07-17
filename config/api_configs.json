@@ -5,7 +5,8 @@
           "endpoint": "/inquire-price",
           "tr_id": "FHMIF10000000",
           "params": {
-          }
+          },
+           "outputs": [1, 2, 3]
       },
       {
           "job": "2",
@@ -16,7 +17,8 @@
               "FID_INPUT_DATE_1": "20250705",
               "FID_INPUT_DATE_2": "20251231",
               "FID_PERIOD_DIV_CODE": "D"
-          }
+          },
+         "outputs": [1, 2]
       },
       {
           "job": "3",
@@ -29,7 +31,8 @@
               "FID_FAKE_TICK_INCU_YN": "N",
               "FID_INPUT_DATE_1": "20250731",
               "FID_INPUT_HOUR_1": "093000"
-          }
+          },
+          "outputs": [1, 2]
       },
       {
           "job": "4",
@@ -41,6 +44,7 @@
               "FID_COND_SCR_DIV_CODE": "",
               "FID_MTRT_CNT": "",
               "FID_COND_MRKT_CLS_CODE": ""
-          }
+          },
+          "outputs": [1]
       }
   ]

@@ -1,0 +1,55 @@
+INSERT INTO RST_FHKIF03020100_01 (
+    raw_api_id,
+    req_cond_mrkt_div_code, req_input_iscd, req_input_date_1, req_input_date_2, req_period_div_code,
+    base_date,
+    futs_prdy_vrss, prdy_vrss_sign, futs_prdy_ctrt, futs_prdy_clpr,
+    acml_vol, acml_tr_pbmn, hts_kor_isnm, futs_prpr, futs_shrn_iscd, prdy_vol,
+    futs_mxpr, futs_llam, futs_oprc, futs_hgpr, futs_lwpr,
+    futs_prdy_oprc, futs_prdy_hgpr, futs_prdy_lwpr, futs_askp, futs_bidp,
+    basis, kospi200_nmix, kospi200_prdy_vrss, kospi200_prdy_ctrt, kospi200_prdy_vrss_sign,
+    hts_otst_stpl_qty, otst_stpl_qty_icdc, tday_rltv, hts_thpr, dprt,
+    inserted_at
+)
+SELECT
+    r.id,
+    json_extract(r.param, '$.FID_COND_MRKT_DIV_CODE'),
+    json_extract(r.param, '$.FID_INPUT_ISCD'),
+    json_extract(r.param, '$.FID_INPUT_DATE_1'),
+    json_extract(r.param, '$.FID_INPUT_DATE_2'),
+    json_extract(r.param, '$.FID_PERIOD_DIV_CODE'), -- 예시 param에 존재하여 추가
+    r.created_at,
+    CAST(json_extract(r.data, '$.output1.futs_prdy_vrss') AS REAL),
+    json_extract(r.data, '$.output1.prdy_vrss_sign'),
+    CAST(json_extract(r.data, '$.output1.futs_prdy_ctrt') AS REAL),
+    CAST(json_extract(r.data, '$.output1.futs_prdy_clpr') AS REAL),
+    CAST(json_extract(r.data, '$.output1.acml_vol') AS INTEGER),
+    CAST(json_extract(r.data, '$.output1.acml_tr_pbmn') AS INTEGER),
+    json_extract(r.data, '$.output1.hts_kor_isnm'),
+    CAST(json_extract(r.data, '$.output1.futs_prpr') AS REAL),
+    json_extract(r.data, '$.output1.futs_shrn_iscd'),
+    CAST(json_extract(r.data, '$.output1.prdy_vol') AS INTEGER),
+    CAST(json_extract(r.data, '$.output1.futs_mxpr') AS REAL),
+    CAST(json_extract(r.data, '$.output1.futs_llam') AS REAL),
+    CAST(json_extract(r.data, '$.output1.futs_oprc') AS REAL),
+    CAST(json_extract(r.data, '$.output1.futs_hgpr') AS REAL),
+    CAST(json_extract(r.data, '$.output1.futs_lwpr') AS REAL),
+    CAST(json_extract(r.data, '$.output1.futs_prdy_oprc') AS REAL),
+    CAST(json_extract(r.data, '$.output1.futs_prdy_hgpr') AS REAL),
+    CAST(json_extract(r.data, '$.output1.futs_prdy_lwpr') AS REAL),
+    CAST(json_extract(r.data, '$.output1.futs_askp') AS REAL),
+    CAST(json_extract(r.data, '$.output1.futs_bidp') AS REAL),
+    CAST(json_extract(r.data, '$.output1.basis') AS REAL),
+    CAST(json_extract(r.data, '$.output1.kospi200_nmix') AS REAL),
+    CAST(json_extract(r.data, '$.output1.kospi200_prdy_vrss') AS REAL),
+    CAST(json_extract(r.data, '$.output1.kospi200_prdy_ctrt') AS REAL),
+    json_extract(r.data, '$.output1.kospi200_prdy_vrss_sign'),
+    CAST(json_extract(r.data, '$.output1.hts_otst_stpl_qty') AS INTEGER),
+    CAST(json_extract(r.data, '$.output1.otst_stpl_qty_icdc') AS INTEGER),
+    CAST(json_extract(r.data, '$.output1.tday_rltv') AS REAL),
+    CAST(json_extract(r.data, '$.output1.hts_thpr') AS REAL),
+    CAST(json_extract(r.data, '$.output1.dprt') AS REAL),
+    STRFTIME('%Y-%m-%dT%H:%M:%f', 'now')
+FROM
+    rst_raw_api AS r
+WHERE
+    r.response_type = 'FHKIF03020100' AND json_extract(r.data, '$.output1') IS NOT NULL;

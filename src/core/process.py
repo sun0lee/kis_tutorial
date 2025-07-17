@@ -35,6 +35,7 @@ class MarketDataManager:
             cur_endpoint = config["endpoint"]
             cur_tr_id = config["tr_id"]
             cur_params = config["params"]
+            cur_outputs = config["outputs"]
 
             for inst in self.inst_list:
                 cur_code = inst['shrn_iscd']
@@ -63,3 +64,21 @@ class MarketDataManager:
             print(f"\n============================================================")
             print(f"=== API 호출 설정: '{config['name']}' 처리 완료 ===")
             print(f"============================================================\n")
+
+    def transform_data(self, job_list: Optional[List[str]] = None):
+        configs_to_run = self.api_call_configs
+
+        for config in configs_to_run:
+            print(f"\n============================================================")
+            print(f"=== API 호출 설정: '{config['job']}' : '{config['name']}' Raw data 변환 처리 시작 ===")
+            print(f"============================================================\n")
+
+            cur_tr_id = config["tr_id"]
+            cur_outputs = config["outputs"]
+
+            for idx in cur_outputs:
+                self.db_manager.transform(cur_tr_id, idx)
+
+            print("\n============================================================")
+            print("=== 모든 Raw API 데이터 변환 작업 완료 ===")
+            print("============================================================\n")

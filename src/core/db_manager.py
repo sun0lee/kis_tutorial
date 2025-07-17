@@ -1,8 +1,10 @@
 import sqlite3
 import json
+import os
 from typing  import List, Dict, Any
 from datetime import datetime
-from core import DATA_PATH
+from core import DATA_PATH, SQL_DIR
+
 
 RAW_API_TABLE = "rst_raw_api"
 # RAW_API_SCHEMA = {
@@ -18,11 +20,12 @@ class DatabaseManager:
 
     def __init__(self):
         self.db_path = DATA_PATH
+        self.sql_dir = SQL_DIR
 
     def _get_connection(self):
         conn = sqlite3.connect(self.db_path)
         conn.row_factory = sqlite3.Row  # 컬럼 이름으로 접근 가능하게 설정
-        # print(f"[DEBUG] _get_connection: 연결 객체 생성됨: {conn}")  # <-- 추가
+        # print(f"[DEBUG] _get_connection: 연결 객체 생성됨: {conn}")
         return conn
 
     def get_inst_list(self) -> List[Dict[str, Any]]:
@@ -86,3 +89,41 @@ class DatabaseManager:
             raise
         finally:
             conn.close()
+
+    def execute_sql (self, file_name: str):
+        sql_file_path = os.path.join(self.sql_dir,file_name)
+
+        if not os.path.exists(sql_file_path):
+            print(f"ERROR: SQL 파일 '{sql_file_path}'를 찾을 수 없습니다.")
+            raise FileNotFoundError(f"SQL file not found: {sql_file_path}")
+
+        try:
+            with open(sql_file_path, 'r', encoding='utf-8') as f:
+                sql_query = f.read()
+
+            conn = self._get_connection()
+            cursor = conn.cursor()
+            cursor.execute(sql_query)
+            conn.commit()
+            print(f"SQL 파일 '{file_name}' 실행 및 커밋 완료.")
+            return cursor.rowcount  # 영향을 받은 행의 수 반환
+
+        except sqlite3.Error as e:
+            print(f"ERROR: SQL 파일 '{file_name}' 실행 중 데이터베이스 오류 발생: {e}")
+            conn.rollback()
+            raise
+        except Exception as e:
+            print(f"ERROR: SQL 파일 '{file_name}' 처리 중 알 수 없는 오류 발생: {e}")
+            raise
+        finally:
+            if conn:
+                conn.close()
+
+    def transform (self, tr_id:str, idx: int = 1):
+        file_name = f"{tr_id}_{idx:02d}.sql"
+        print(f"\n---원본 데이터 변환 : TR ID '{tr_id}', output '{idx}'---")
+        try:
+            self.execute_sql (file_name)
+            print(f"원본 데이터 변환 완료: {file_name}")
+        except Exception as e:
+            print(f"원본 데이터 변환 실패: {file_name} - {e}")

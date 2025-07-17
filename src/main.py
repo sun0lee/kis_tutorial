@@ -30,3 +30,5 @@ if __name__ == "__main__":
     # manager.save_data(job_list=["1"])
     # manager.save_data(job_list=["2","3"])
     # manager.save_data(job_list=["4"])
+
+    manager.transform_data()
