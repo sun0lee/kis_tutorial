@@ -5,7 +5,8 @@ from typing  import List, Dict, Any
 from datetime import datetime
 from core import DATA_PATH, SQL_DIR
 
-
+MST_API_JOB_TABLE = "mst_api_job"
+MST_API_JOB_PARAM_TABLE = "mst_api_job_param"
 RAW_API_TABLE = "rst_raw_api"
 # RAW_API_SCHEMA = {
 #     "id": "INTEGER PRIMARY KEY AUTOINCREMENT",
@@ -27,6 +28,31 @@ class DatabaseManager:
         conn.row_factory = sqlite3.Row  # 컬럼 이름으로 접근 가능하게 설정
         # print(f"[DEBUG] _get_connection: 연결 객체 생성됨: {conn}")
         return conn
+
+    def get_job_list(self, job_type: str) -> List[Dict[str, Any]]:
+        conn = self._get_connection()
+        cursor = conn.cursor()
+        try:
+            cursor.execute(f"SELECT * FROM {MST_API_JOB_TABLE} WHERE job_type = ? AND use_yn ='Y'", (job_type,))
+            job_list = cursor.fetchall()
+            result_jobs = []
+
+            for job in job_list:
+                job_dict = dict(job)
+                cursor.execute(
+                    f"SELECT param_key, param_value, param_type, is_dynamic FROM {MST_API_JOB_PARAM_TABLE} WHERE job_id = ?",
+                    (job['job_id'],))
+                params_for_job = cursor.fetchall()
+
+                job_dict['params'] = {p['param_key']: p['param_value'] for p in params_for_job}
+                # job_dict['param_meta'] = [{p_key: p_value for p_key, p_value in p.items()} for p in params_for_job]
+                result_jobs.append(job_dict)
+            return result_jobs
+        except sqlite3.Error as e:
+            print(f"Error retrieving API jobs from DB: {e}")
+            return []
+        finally:
+            conn.close()
 
     def get_inst_list(self) -> List[Dict[str, Any]]:
         insts = []

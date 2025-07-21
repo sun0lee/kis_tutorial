@@ -4,8 +4,6 @@ from typing import Dict, Any, Optional
 from pykis import KisAuth, PyKis
 from core import AUTH_CONFIG_PATH
 
-BASE_API_URL = "https://openapi.koreainvestment.com:9443/uapi/domestic-futureoption/v1/quotations"
-
 class KisClient:
     def __init__(self):
         print("[KIS Client] KisClient 인스턴스 초기화 및 인증 정보 로드...")
@@ -29,12 +27,13 @@ class KisClient:
 
     def _call_api(
             self,
+            base_url: str,
             endpoint: str,
             tr_id: str,
             params: Dict[str, Any]
     ) -> Optional[Dict[str, Any]]:
 
-        url = f"{BASE_API_URL}{endpoint}"
+        url = f"{base_url}{endpoint}"
 
         headers = {
             "Content-Type": "application/json; charset=utf-8",
