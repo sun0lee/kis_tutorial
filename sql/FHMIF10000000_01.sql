@@ -1,4 +1,4 @@
-INSERT INTO RST_FHMIF10000000_01 (
+INSERT OR REPLACE INTO RST_FHMIF10000000_01 (
     raw_api_id,
     req_cond_mrkt_div_code, req_input_iscd,
     base_date,

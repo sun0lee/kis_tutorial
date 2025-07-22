@@ -1,4 +1,4 @@
-INSERT INTO RST_FHMIF10000000_02 (
+INSERT OR REPLACE INTO RST_FHMIF10000000_02 (
     raw_api_id,
     req_cond_mrkt_div_code, req_input_iscd,
     base_date, -- rawdata call 시점 컬럼 추가

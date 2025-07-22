@@ -1,7 +1,7 @@
 from typing import Optional, List, Dict, Any
-
 from core.db_manager import DatabaseManager
 from core.api_client import KisClient
+import json
 
 class MarketDataManager:
     def __init__(self, kis_client: KisClient
@@ -48,12 +48,7 @@ class MarketDataManager:
                 print(
                     f"  --- 종목: {cur_kor_name} ({cur_code}, 시장 구분: {cur_mrkt_div}) (작업: {config['job_name']}) 데이터 처리 중 ---")
 
-                data = self.kis_client._call_api(
-                    base_url=base_url,
-                    endpoint=endpoint,
-                    tr_id=tr_id,
-                    params=params_for_call
-                )
+                data = self.kis_client._call_api(base_url,endpoint,tr_id,params_for_call)
 
                 if data:
                     print(f"    [API 응답]: {data.get('msg1') if 'msg1' in data else '데이터 수신 완료'}")
@@ -88,12 +83,8 @@ class MarketDataManager:
 
 
             print(f"  --- 전체 시장 현황 (작업: {config['job_name']}) 데이터 처리 중 'BOARD_ALL' 유형 (TR_ID: {tr_id})  ---")
-            data = self.kis_client._call_api(
-                base_url=base_url,
-                endpoint=endpoint,
-                tr_id=tr_id,
-                params=params,
-            )
+            data = self.kis_client._call_api(base_url,endpoint,tr_id,params)
+
             if data:
                 print(f"      [API 응답]: {data.get('msg1') if 'msg1' in data else '데이터 수신 완료'}")
                 rowid = self.db_manager.insert(tr_id, 'ALL', params, data)
@@ -104,20 +95,21 @@ class MarketDataManager:
             print(f"  --- 전체 시장 현황 (작업: {config['job_name']}) 데이터 처리 완료 ---\n")
 
 
-    def transform_data(self, job_list: Optional[List[str]] = None):
-        configs_to_run = self.api_call_configs
+    def transform_data(self):
+
+        configs_to_run = self.db_manager.get_job_list()
 
         for config in configs_to_run:
             print(f"\n============================================================")
-            print(f"=== API 호출 설정: '{config['job']}' : '{config['name']}' Raw data 변환 처리 시작 ===")
+            print(f"=== API 호출 설정: '{config['job_id']}' : '{config['job_name']}' Raw data 변환 처리 시작 ===")
             print(f"============================================================\n")
 
             cur_tr_id = config["tr_id"]
-            cur_outputs = config["outputs"]
+            cur_outputs = json.loads(config["outputs"])
 
             for idx in cur_outputs:
                 self.db_manager.transform(cur_tr_id, idx)
 
             print("\n============================================================")
-            print("=== 모든 Raw API 데이터 변환 작업 완료 ===")
+            print(f"=== API 호출 설정: '{config['job_id']}' : '{config['job_name']}' Raw data 변환 작업 완료 ===")
             print("============================================================\n")

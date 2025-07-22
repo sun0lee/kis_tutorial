@@ -1,0 +1,63 @@
+INSERT OR REPLACE INTO RST_FHPIF05030100 (
+    raw_api_id,req_maturity_date, option_type, base_date,
+    acpr, unch_prpr, optn_shrn_iscd, optn_prpr, optn_prdy_vrss, prdy_vrss_sign, optn_prdy_ctrt,
+    optn_bidp, optn_askp, tmvl_val, nmix_sdpr, acml_vol, seln_rsqn, shnu_rsqn, acml_tr_pbmn,
+    hts_otst_stpl_qty, otst_stpl_qty_icdc, delta_val, gama, vega, theta, rho, hts_ints_vltl,
+    invl_val, esdg, dprt, hist_vltl, hts_thpr, optn_oprc, optn_hgpr, optn_lwpr, optn_mxpr, optn_llam,
+    atm_cls_name, rgbf_vrss_icdc, total_askp_rsqn, total_bidp_rsqn,
+    futs_antc_cnpr, futs_antc_cntg_vrss, antc_cntg_vrss_sign, antc_cntg_prdy_ctrt,
+    inserted_at
+)
+SELECT
+    r.id,
+    json_extract(r.param, '$.FID_MTRT_CNT'), 
+    'PUT' AS option_type,
+    STRFTIME('%Y-%m-%dT%H:%M:%f', r.created_at) AS base_date, -- 원본 API 호출 시간
+    CAST(json_extract(json_each.value, '$.acpr') AS REAL),
+    CAST(json_extract(json_each.value, '$.unch_prpr') AS REAL),
+    json_extract(json_each.value, '$.optn_shrn_iscd'),
+    CAST(json_extract(json_each.value, '$.optn_prpr') AS REAL),
+    CAST(json_extract(json_each.value, '$.optn_prdy_vrss') AS REAL),
+    json_extract(json_each.value, '$.prdy_vrss_sign'),
+    CAST(json_extract(json_each.value, '$.optn_prdy_ctrt') AS REAL),
+    CAST(json_extract(json_each.value, '$.optn_bidp') AS REAL),
+    CAST(json_extract(json_each.value, '$.optn_askp') AS REAL),
+    CAST(json_extract(json_each.value, '$.tmvl_val') AS REAL),
+    CAST(json_extract(json_each.value, '$.nmix_sdpr') AS REAL),
+    CAST(json_extract(json_each.value, '$.acml_vol') AS INTEGER),
+    CAST(json_extract(json_each.value, '$.seln_rsqn') AS INTEGER),
+    CAST(json_extract(json_each.value, '$.shnu_rsqn') AS INTEGER),
+    CAST(json_extract(json_each.value, '$.acml_tr_pbmn') AS REAL),
+    CAST(json_extract(json_each.value, '$.hts_otst_stpl_qty') AS INTEGER),
+    CAST(json_extract(json_each.value, '$.otst_stpl_qty_icdc') AS INTEGER),
+    CAST(json_extract(json_each.value, '$.delta_val') AS REAL),
+    CAST(json_extract(json_each.value, '$.gama') AS REAL),
+    CAST(json_extract(json_each.value, '$.vega') AS REAL),
+    CAST(json_extract(json_each.value, '$.theta') AS REAL),
+    CAST(json_extract(json_each.value, '$.rho') AS REAL),
+    CAST(json_extract(json_each.value, '$.hts_ints_vltl') AS REAL),
+    CAST(json_extract(json_each.value, '$.invl_val') AS REAL),
+    CAST(json_extract(json_each.value, '$.esdg') AS REAL),
+    CAST(json_extract(json_each.value, '$.dprt') AS REAL),
+    CAST(json_extract(json_each.value, '$.hist_vltl') AS REAL),
+    CAST(json_extract(json_each.value, '$.hts_thpr') AS REAL),
+    CAST(json_extract(json_each.value, '$.optn_oprc') AS REAL),
+    CAST(json_extract(json_each.value, '$.optn_hgpr') AS REAL),
+    CAST(json_extract(json_each.value, '$.optn_lwpr') AS REAL),
+    CAST(json_extract(json_each.value, '$.optn_mxpr') AS REAL),
+    CAST(json_extract(json_each.value, '$.optn_llam') AS REAL),
+    json_extract(json_each.value, '$.atm_cls_name'),
+    CAST(json_extract(json_each.value, '$.rgbf_vrss_icdc') AS INTEGER),
+    CAST(json_extract(json_each.value, '$.total_askp_rsqn') AS INTEGER),
+    CAST(json_extract(json_each.value, '$.total_bidp_rsqn') AS INTEGER),
+    CAST(json_extract(json_each.value, '$.futs_antc_cnpr') AS REAL),
+    CAST(json_extract(json_each.value, '$.futs_antc_cntg_vrss') AS REAL),
+    json_extract(json_each.value, '$.antc_cntg_vrss_sign'),
+    CAST(json_extract(json_each.value, '$.antc_cntg_prdy_ctrt') AS REAL),
+    STRFTIME('%Y-%m-%dT%H:%M:%f', 'now')
+FROM
+    rst_raw_api AS r,
+    json_each(r.data, '$.output2') AS json_each -- 풋옵션은 output2
+WHERE
+    r.response_type = 'FHPIF05030100'
+    AND r.symbol ='ALL';

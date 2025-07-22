@@ -1,7 +1,7 @@
 import sqlite3
 import json
 import os
-from typing  import List, Dict, Any
+from typing  import List, Dict, Any, Optional
 from datetime import datetime
 from core import DATA_PATH, SQL_DIR
 
@@ -29,11 +29,21 @@ class DatabaseManager:
         # print(f"[DEBUG] _get_connection: 연결 객체 생성됨: {conn}")
         return conn
 
-    def get_job_list(self, job_type: str) -> List[Dict[str, Any]]:
+    def get_job_list(self,  job_type: Optional[str] = None) -> List[Dict[str, Any]]:
         conn = self._get_connection()
         cursor = conn.cursor()
+
+        query = f"SELECT * FROM {MST_API_JOB_TABLE}"
+        conditions = ["use_yn = 'Y'"]  # use_yn 조건은 항상 유지
+        params = []
+        if job_type is not None:
+            conditions.append("job_type = ?")
+            params.append(job_type)
+        if conditions:
+            query += " WHERE " + " AND ".join(conditions)
+
         try:
-            cursor.execute(f"SELECT * FROM {MST_API_JOB_TABLE} WHERE job_type = ? AND use_yn ='Y'", (job_type,))
+            cursor.execute(query, params)
             job_list = cursor.fetchall()
             result_jobs = []
 
@@ -45,7 +55,6 @@ class DatabaseManager:
                 params_for_job = cursor.fetchall()
 
                 job_dict['params'] = {p['param_key']: p['param_value'] for p in params_for_job}
-                # job_dict['param_meta'] = [{p_key: p_value for p_key, p_value in p.items()} for p in params_for_job]
                 result_jobs.append(job_dict)
             return result_jobs
         except sqlite3.Error as e:
@@ -147,7 +156,7 @@ class DatabaseManager:
 
     def transform (self, tr_id:str, idx: int = 1):
         file_name = f"{tr_id}_{idx:02d}.sql"
-        print(f"\n---원본 데이터 변환 : TR ID '{tr_id}', output '{idx}'---")
+        print(f"\n   ---원본 데이터 변환 : TR ID '{tr_id}', output '{idx}'---")
         try:
             self.execute_sql (file_name)
             print(f"원본 데이터 변환 완료: {file_name}")
