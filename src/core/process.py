@@ -19,7 +19,7 @@ class MarketDataManager:
             return
 
         if not inst_list:
-            print("\n경고: 'PER_SYMBOL' 타입 작업을 위해 'inst_list'가 제공되지 않았습니다. mst_inst의 use_yn를 확인하세요.")
+            print("\n경고: 'PER_SYMBOL' 타입 작업을 위해 'inst_list'가 제공되지 않았습니다. mst_api_inst의 use_yn를 확인하세요.")
             return
 
         print("\n--- Processing 'PER_SYMBOL' (Symbol-specific) Jobs ---")

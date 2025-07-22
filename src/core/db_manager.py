@@ -5,9 +5,11 @@ from typing  import List, Dict, Any, Optional
 from datetime import datetime
 from core import DATA_PATH, SQL_DIR
 
+MST_API_INST_TABLE = "mst_api_inst"
 MST_API_JOB_TABLE = "mst_api_job"
 MST_API_JOB_PARAM_TABLE = "mst_api_job_param"
 RAW_API_TABLE = "rst_raw_api"
+
 # RAW_API_SCHEMA = {
 #     "id": "INTEGER PRIMARY KEY AUTOINCREMENT",
 #     "response_type": "TEXT NOT NULL",
@@ -71,14 +73,14 @@ class DatabaseManager:
             cursor = conn.cursor()
             # print(f"[DEBUG] get_inst_list: 커서 객체 생성됨: {cursor}")
 
-            query = "SELECT shrn_iscd, mrkt_div, kor_name FROM mst_inst WHERE use_yn = 'Y'"
+            query = "SELECT shrn_iscd, mrkt_div, kor_name FROM {MST_API_INST_TABLE} WHERE use_yn = 'Y'"
             cursor.execute(query)
 
             rows = cursor.fetchall()
             # print(f"[DEBUG] get_inst_list: 조회된 행의 수: {len(rows)}")
 
             if not rows:
-                print("경고: 'mst_inst' 테이블에 'use_yn = 'Y''인 종목이 없습니다. API 호출 대상 없음.")
+                print("경고: {MST_API_INST_TABLE} 테이블에 'use_yn = 'Y''인 종목이 없습니다. API 호출 대상 없음.")
                 return []
 
             column_names = rows[0].keys()  # 첫 번째 행에서 컬럼 이름을 가져옵니다.
@@ -89,7 +91,7 @@ class DatabaseManager:
                 insts.append(item)
 
         except Exception as e:
-            print(f"ERROR: mst_inst 테이블에서 종목 조회 중 오류 발생: {e}")
+            print(f"ERROR: {MST_API_INST_TABLE} 테이블에서 종목 조회 중 오류 발생: {e}")
             insts = []  # 오류 발생 시 빈 리스트 반환
         finally:
             if conn:
