@@ -79,21 +79,53 @@ class MarketDataManager:
             base_url = config["base_url"]
             endpoint = config["endpoint"]
             tr_id = config["tr_id"]
-            params = config["params"]
 
+            fixed_params = {}
+            dynamic_param_key = None
+            dynamic_param_values = [None]
 
-            print(f"  --- 전체 시장 현황 (작업: {config['job_name']}) 데이터 처리 중 'BOARD_ALL' 유형 (TR_ID: {tr_id})  ---")
-            data = self.kis_client._call_api(base_url,endpoint,tr_id,params)
+            for param_info in config["params"]:
+                param_key = param_info['param_key']
+                param_value = param_info['param_value']
+                param_type = param_info['param_type']
+                is_dynamic = param_info['is_dynamic']
 
-            if data:
-                print(f"      [API 응답]: {data.get('msg1') if 'msg1' in data else '데이터 수신 완료'}")
-                rowid = self.db_manager.insert(tr_id, 'ALL', params, data)
-                print(f"      데이터베이스에 rowid = {rowid}의 데이터가 적재되었습니다.")
-            else:
-                print(f"      API 호출 실패: 일반 'BOARD_ALL' 유형 (작업: {config['job_name']}) 데이터를 적재하지 않습니다.")
+                if is_dynamic == 1:
+                    dynamic_param_key = param_key
+                    try:
+                        parsed_value = json.loads(param_value)
+                        if isinstance(parsed_value, list):
+                            dynamic_param_values = parsed_value
+                        else:
+                            dynamic_param_values = [param_value]
+                    except json.JSONDecodeError:
+                        dynamic_param_values = [param_value]
+                else:
+                    fixed_params[param_key] = param_value
 
-            print(f"  --- 전체 시장 현황 (작업: {config['job_name']}) 데이터 처리 완료 ---\n")
+            for dynamic_value in dynamic_param_values:
+                params_for_call = fixed_params.copy()
+                if dynamic_param_key:
+                    params_for_call[dynamic_param_key] = dynamic_value
 
+                print(f"  --- 전체 시장 현황 (작업: {config['job_name']}) 데이터 처리 중 'BOARD_ALL' 유형 (TR_ID: {tr_id})  ---")
+                if dynamic_param_key:
+                    print(f"    동적 파라미터 '{dynamic_param_key}': '{dynamic_value}' 적용")
+
+                data = self.kis_client._call_api(base_url, endpoint, tr_id, params_for_call)
+
+                if data:
+                    print(f"      [API 응답]: {data.get('msg1') if 'msg1' in data else '데이터 수신 완료'}")
+                    rowid = self.db_manager.insert(tr_id, 'ALL', params_for_call, data)
+                    print(f"      데이터베이스에 rowid = {rowid}의 데이터가 적재되었습니다.")
+                else:
+                    print(f"      API 호출 실패: 일반 'BOARD_ALL' 유형 (작업: {config['job_name']}) 데이터를 적재하지 않습니다.")
+
+                print(f"  --- 전체 시장 현황 (작업: {config['job_name']}) 데이터 처리 완료 ---\n")
+
+            print(f"\n============================================================")
+            print(f"=== API Job '{config['job_name']}' 처리 완료 ===")
+            print("============================================================\n")
 
     def transform_data(self):
 

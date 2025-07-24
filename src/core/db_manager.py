@@ -36,7 +36,7 @@ class DatabaseManager:
         cursor = conn.cursor()
 
         query = f"SELECT * FROM {MST_API_JOB_TABLE}"
-        conditions = ["use_yn = 'Y'"]  # use_yn 조건은 항상 유지
+        conditions = ["use_yn = 'Y'"]
         params = []
         if job_type is not None:
             conditions.append("job_type = ?")
@@ -56,7 +56,8 @@ class DatabaseManager:
                     (job['job_id'],))
                 params_for_job = cursor.fetchall()
 
-                job_dict['params'] = {p['param_key']: p['param_value'] for p in params_for_job}
+                # job_dict['params'] = {p['param_key']: p['param_value'] for p in params_for_job}
+                job_dict['params'] = [dict(p) for p in params_for_job]
                 result_jobs.append(job_dict)
             return result_jobs
         except sqlite3.Error as e:
@@ -73,7 +74,7 @@ class DatabaseManager:
             cursor = conn.cursor()
             # print(f"[DEBUG] get_inst_list: 커서 객체 생성됨: {cursor}")
 
-            query = "SELECT shrn_iscd, mrkt_div, kor_name FROM {MST_API_INST_TABLE} WHERE use_yn = 'Y'"
+            query = f"SELECT shrn_iscd, mrkt_div, kor_name FROM {MST_API_INST_TABLE} WHERE use_yn = 'Y'"
             cursor.execute(query)
 
             rows = cursor.fetchall()
