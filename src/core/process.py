@@ -33,17 +33,19 @@ class MarketDataManager:
             tr_id = config["tr_id"]
             params=config["params"]
 
-            if "FID_INPUT_ISCD" not in params:
-                params["FID_INPUT_ISCD"] = ""  # 임시 값, 아래 루프에서 채워짐
-
             for inst in inst_list:
                 cur_code = inst['shrn_iscd']
                 cur_mrkt_div = inst['mrkt_div']
                 cur_kor_name = inst['kor_name']
 
-                params_for_call = params.copy()
-                params_for_call["FID_INPUT_ISCD"] = cur_code
-                params_for_call["FID_COND_MRKT_DIV_CODE"] = cur_mrkt_div
+                params_for_call = {
+                    'FID_INPUT_ISCD': cur_code,
+                    'FID_COND_MRKT_DIV_CODE': cur_mrkt_div
+                }
+                for param_meta in params:
+                    param_key = param_meta['param_key']
+                    param_value = param_meta['param_value']
+                    params_for_call[param_key] = param_value
 
                 print(
                     f"  --- 종목: {cur_kor_name} ({cur_code}, 시장 구분: {cur_mrkt_div}) (작업: {config['job_name']}) 데이터 처리 중 ---")
