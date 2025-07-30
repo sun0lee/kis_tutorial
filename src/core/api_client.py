@@ -5,17 +5,36 @@ from pykis import KisAuth, PyKis
 from core import AUTH_CONFIG_PATH
 
 class KisClient:
-    def __init__(self):
+    def __init__(self, credentials: Optional[Dict[str, Any]] = None):
         print("[KIS Client] KisClient 인스턴스 초기화 및 인증 정보 로드...")
+
         try:
-            auth_config = KisAuth.load(AUTH_CONFIG_PATH)
-            self.auth = PyKis(auth_config, keep_token=True)
-            self.app_key = auth_config.appkey
-            self.app_secret = auth_config.secretkey
-            self._access_token = self.auth.token.token
+            if credentials is None:
+                auth_config = KisAuth.load(AUTH_CONFIG_PATH)
+                self.auth = PyKis(auth_config, keep_token=True)
+                self.app_key = auth_config.appkey
+                self.app_secret = auth_config.secretkey
+                self._access_token = self.auth.token.token
+
+            else:
+                id = credentials.get('id')
+                account = credentials.get('account')
+                appkey = credentials.get('appkey')
+                secretkey = credentials.get('secretkey')
+
+                self.auth = PyKis(
+                    id=id,
+                    account=account,
+                    appkey=appkey,
+                    secretkey=secretkey,
+                    keep_token=True
+                )
+
+                self.app_key = appkey
+                self.app_secret = secretkey
+                self._access_token = self.auth.token.token
 
             print("[KIS Client] 인증 정보 로드 성공.")
-        #    print(self._access_token)
 
         except Exception as e:
             print(f"[KIS Client Error] 인증 정보 로드 실패: {e}")

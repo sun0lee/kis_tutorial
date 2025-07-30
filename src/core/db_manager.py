@@ -4,32 +4,96 @@ import os
 from typing  import List, Dict, Any, Optional
 from datetime import datetime
 from core import DATA_PATH, SQL_DIR
+from cryptography.fernet import Fernet
 
 MST_API_INST_TABLE = "mst_api_inst"
 MST_API_JOB_TABLE = "mst_api_job"
 MST_API_JOB_PARAM_TABLE = "mst_api_job_param"
 RAW_API_TABLE = "rst_raw_api"
-
-# RAW_API_SCHEMA = {
-#     "id": "INTEGER PRIMARY KEY AUTOINCREMENT",
-#     "response_type": "TEXT NOT NULL",
-#     "symbol": "TEXT",
-#     "param": "TEXT NOT NULL",
-#     "data": "TEXT NOT NULL",
-#     "created_at": "TEXT NOT NULL"
-# }
+MST_API_AUTH_TABLE = "mst_api_auth"
 
 class DatabaseManager:
 
-    def __init__(self):
+    def __init__(self, encryption_key: Optional[bytes] = None):
+        self.encryption_enabled = False
+        self.cipher_suite = None
+
+        if encryption_key:
+            try:
+                self.cipher_suite = Fernet(encryption_key)
+                self.encryption_enabled = True
+                print("[DB Manager] 암호화 기능이 활성화되었습니다.")
+            except Exception as e:
+                print(f"[DB Manager Error] 유효하지 않은 암호화 키: {e}. 암호화 기능이 비활성화됩니다.")
+                # 유효하지 않은 키라도 프로그램은 계속 실행되지만 암호화는 비활성화됨
+        else:
+            print("[DB Manager] 암호화 키가 제공되지 않았습니다. 암호화 기능이 비활성화됩니다.")
+
         self.db_path = DATA_PATH
         self.sql_dir = SQL_DIR
 
     def _get_connection(self):
         conn = sqlite3.connect(self.db_path)
         conn.row_factory = sqlite3.Row  # 컬럼 이름으로 접근 가능하게 설정
-        # print(f"[DEBUG] _get_connection: 연결 객체 생성됨: {conn}")
         return conn
+
+    def _encrypt(self, data: str) -> str:
+        encoded_data = data.encode('utf-8')
+        encrypted_data = self.cipher_suite.encrypt(encoded_data)
+        return encrypted_data.decode('utf-8')
+
+    def _decrypt(self, encrypted_data: str) -> str:
+        decoded_data = encrypted_data.encode('utf-8')
+        decrypted_data = self.cipher_suite.decrypt(decoded_data)
+        return decrypted_data.decode('utf-8')
+
+    def save_api_credentials(self, credentials: Dict[str, Any]):
+        conn = self._get_connection()
+        cursor = conn.cursor()
+        try:
+            json_credentials = json.dumps(credentials, ensure_ascii=False)
+            encrypted_credentials = self._encrypt(json_credentials)
+            now = datetime.now().isoformat()
+
+            cursor.execute(f"""
+                INSERT OR REPLACE INTO {MST_API_AUTH_TABLE} (config_key, encrypted_value, created_at, updated_at)
+                VALUES (?, ?, ?, ?)
+            """, ('kis_api_credentials', encrypted_credentials, now, now))
+            conn.commit()
+            print("[DB Manager] KIS API 접속 정보가 암호화되어 DB에 저장되었습니다.")
+        except sqlite3.Error as e:
+            print(f"[DB Manager Error] KIS API 접속 정보 저장 실패: {e}")
+            conn.rollback()
+            raise
+        finally:
+            conn.close()
+
+    def load_api_credentials(self) -> Optional[Dict[str, Any]]:
+        conn = self._get_connection()
+        cursor = conn.cursor()
+        try:
+            cursor.execute(f"""
+                SELECT encrypted_value FROM {MST_API_AUTH_TABLE}
+                WHERE config_key = 'kis_api_credentials'
+            """)
+            result = cursor.fetchone()
+            if result:
+                encrypted_credentials = result['encrypted_value']
+                decrypted_json = self._decrypt(encrypted_credentials)
+                credentials = json.loads(decrypted_json)
+                print("[DB Manager] KIS API 접속 정보가 DB에서 성공적으로 로드 및 복호화되었습니다.")
+                return credentials
+            else:
+                print("[DB Manager] 'kis_api_credentials'를 DB에서 찾을 수 없습니다.")
+                return None
+        except sqlite3.Error as e:
+            print(f"[DB Manager Error] KIS API 접속 정보 로드/복호화 실패: {e}")
+            raise
+        except json.JSONDecodeError as e:
+            print(f"[DB Manager Error] 복호화된 데이터 JSON 파싱 실패: {e}")
+            raise
+        finally:
+            conn.close()
 
     def get_job_list(self,  job_type: Optional[str] = None) -> List[Dict[str, Any]]:
         conn = self._get_connection()
