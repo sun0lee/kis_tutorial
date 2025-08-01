@@ -1,9 +1,9 @@
 INSERT OR REPLACE INTO RST_FHKIF03020100_02 (
     raw_api_id,
-    req_cond_mrkt_div_code, req_input_iscd, req_period_div_code, -- 조회 시작/종료일자 제거
+    mrkt_div_cd, inst_cd, period_cd,
     base_date,
-    stck_bsop_date, futs_prpr, futs_oprc, futs_hgpr, futs_lwpr,
-    acml_vol, acml_tr_pbmn, mod_yn,
+    bsop_date, prpr, oprc, hgpr, lwpr,
+    acml_vol, acml_trade_amt, mod_yn,
     inserted_at
 )
 SELECT

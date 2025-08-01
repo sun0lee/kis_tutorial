@@ -1,9 +1,9 @@
 INSERT OR REPLACE INTO RST_FHMIF10000000_02 (
     raw_api_id,
-    req_cond_mrkt_div_code, req_input_iscd,
-    base_date, -- rawdata call 시점 컬럼 추가
-    bstp_cls_code, hts_kor_isnm, bstp_nmix_prpr, prdy_vrss_sign,
-    bstp_nmix_prdy_vrss, bstp_nmix_prdy_ctrt, inserted_at
+    mrkt_div_cd, inst_cd,
+    base_date,
+    ind_cls_cd, kor_isnm, ind_idx_prpr, prdy_vs_sign,
+    ind_idx_prdy_vs, ind_idx_prdy_ctrt, inserted_at
 )SELECT
     r.id AS raw_api_id,
     json_extract(r.param, '$.FID_COND_MRKT_DIV_CODE'),

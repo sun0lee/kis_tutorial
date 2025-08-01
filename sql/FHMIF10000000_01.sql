@@ -1,13 +1,13 @@
 INSERT OR REPLACE INTO RST_FHMIF10000000_01 (
     raw_api_id,
-    req_cond_mrkt_div_code, req_input_iscd,
+    mrkt_div_cd, inst_cd,
     base_date,
-    hts_kor_isnm, futs_prpr, futs_prdy_vrss, prdy_vrss_sign, futs_prdy_clpr,
-    futs_prdy_ctrt, acml_vol, acml_tr_pbmn, hts_otst_stpl_qty, otst_stpl_qty_icdc,
-    futs_oprc, futs_hgpr, futs_lwpr, futs_mxpr, futs_llam, basis, futs_sdpr,
-    hts_thpr, dprt, crbr_aply_mxpr, crbr_aply_llam, futs_last_tr_date, hts_rmnn_dynu,
-    futs_lstn_medm_hgpr, futs_lstn_medm_lwpr, delta_val, gama, theta, vega, rho,
-    hist_vltl, hts_ints_vltl, mrkt_basis, acpr, inserted_at
+    kor_isnm, prpr, prdy_vs, prdy_vs_sign, prdy_clpr,
+    prdy_ctrt, acml_vol, acml_trade_amt, otst_stpl_qty, otst_stpl_qty_chg,
+    oprc, hgpr, lwpr, mxpr, llam, basis, sdpr,
+    thpr, disparity_rate, crbr_aply_mxpr, crbr_aply_llam, last_tr_date, rmnn_dynu,
+    lstn_medm_hgpr, lstn_medm_lwpr, delta, gamma, theta, vega, rho,
+    hist_vltl, ints_vltl, market_basis, antc_cnpr, inserted_at
 )
 SELECT
     r.id AS raw_api_id,

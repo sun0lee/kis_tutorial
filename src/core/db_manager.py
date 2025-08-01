@@ -136,13 +136,9 @@ class DatabaseManager:
         try:
             conn = self._get_connection()
             cursor = conn.cursor()
-            # print(f"[DEBUG] get_inst_list: 커서 객체 생성됨: {cursor}")
-
             query = f"SELECT shrn_iscd, mrkt_div, kor_name FROM {MST_API_INST_TABLE} WHERE use_yn = 'Y'"
             cursor.execute(query)
-
             rows = cursor.fetchall()
-            # print(f"[DEBUG] get_inst_list: 조회된 행의 수: {len(rows)}")
 
             if not rows:
                 print("경고: {MST_API_INST_TABLE} 테이블에 'use_yn = 'Y''인 종목이 없습니다. API 호출 대상 없음.")

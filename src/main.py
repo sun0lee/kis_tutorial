@@ -1,59 +1,35 @@
 import time
 import datetime
 import sys
-from core.api_client import KisClient
-from core.db_manager import DatabaseManager
-from core.process import MarketDataManager
 
-kis_client = KisClient()
-db = DatabaseManager()
-manager = MarketDataManager(kis_client, db)
+from core.utils import is_market_open, get_next_scheduled_time
+from core.auth import initialize_application
 
 INTERVAL_SECONDS = 600
 INTERVAL_MINUTES = INTERVAL_SECONDS // 60
 
-
-def is_market_open():
-
-    now = datetime.datetime.now()
-    if now.weekday() >= 5:  # 월요일은 0, 일요일은 6
-        return False
-
-    market_open_time = now.replace(hour=8, minute=30, second=0, microsecond=0)
-    market_close_time = now.replace(hour=15, minute=45, second=0, microsecond=0)
-
-    return market_open_time <= now < market_close_time
-
-
-def get_next_scheduled_time(current_time, interval_minutes):
-    """
-    현재 시간을 기준으로 다음 정각(interval_minutes 단위)을 계산합니다.
-    예: current_time 08:32, interval_minutes 10 -> 08:40:00
-    예: current_time 08:30, interval_minutes 10 -> 08:40:00 (다음 실행 시간)
-    """
-    next_minute_target = (current_time.minute // interval_minutes) * interval_minutes + interval_minutes
-
-    next_hour = current_time.hour
-    if next_minute_target >= 60:
-        next_hour += (next_minute_target // 60)
-        next_minute_target %= 60
-
-    next_time = current_time.replace(hour=next_hour, minute=next_minute_target, second=0, microsecond=0)
-
-    while next_time <= current_time:
-        next_time += datetime.timedelta(minutes=interval_minutes)
-
-    return next_time
-
-
 def main():
-    print("데이터 수집 스케줄러를 시작합니다. (정확히 매 10분 간격)")
+    print("데이터 수집 스케줄러를 시작합니다. (10분 간격)")
     print("종료하려면 Ctrl+C를 누르세요.")
+
+    kis_client, db, manager = initialize_application()
+
+    print(f"[{datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')}] 스케줄러 시작 시 초기 데이터 수집 시작...")
+    try:
+        manager.per_symbol_jobs()
+        manager.board_all_jobs()
+        manager.transform_data()
+
+        print(f"[{datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')}] 초기 데이터 수집 완료.")
+
+    except Exception as e:
+        print(f"[{datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')}] 초기 데이터 수집 중 오류 발생: {e}")
+
 
     initial_now = datetime.datetime.now()
     next_run_time = get_next_scheduled_time(initial_now, INTERVAL_MINUTES)
 
-    market_open_dt_today = initial_now.replace(hour=8, minute=30, second=0, microsecond=0)
+    market_open_dt_today = initial_now.replace(hour=8, minute=20, second=0, microsecond=0)
 
     if next_run_time < market_open_dt_today:
         next_run_time = market_open_dt_today
@@ -95,13 +71,10 @@ def main():
         try:
             manager.per_symbol_jobs()
             manager.board_all_jobs()
-            manager.transform_data()
 
             print(f"[{datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')}] 데이터 수집 완료.")
         except Exception as e:
             print(f"[{datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')}] 데이터 수집 중 오류 발생: {e}")
-
-        next_run_time += datetime.timedelta(minutes=INTERVAL_MINUTES)
 
 
 if __name__ == "__main__":

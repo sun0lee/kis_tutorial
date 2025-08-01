@@ -1,9 +1,9 @@
 INSERT OR REPLACE INTO RST_FHPIF05030000_01 (
     raw_api_id,
-    req_cond_mrkt_div_code, req_input_iscd,
+    mrkt_div_cd, inst_cd,
     base_date,
-    unas_prpr, unas_prdy_vrss, unas_prdy_vrss_sign, unas_prdy_ctrt, unas_acml_vol,
-    hts_kor_isnm, futs_prpr, futs_prdy_vrss, prdy_vrss_sign, futs_prdy_ctrt,
+    ul_prpr, ul_prdy_vs, ul_prdy_vs_sign, ul_prdy_ctrt, ul_acml_vol,
+    kor_isnm, prpr, prdy_vs, prdy_vs_sign, prdy_ctrt,
     inserted_at
 )
 SELECT

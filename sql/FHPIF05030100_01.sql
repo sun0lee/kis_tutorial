@@ -1,12 +1,12 @@
 
 INSERT OR REPLACE INTO RST_FHPIF05030100 (
-    raw_api_id,req_maturity_date, option_type, base_date,
-    acpr, unch_prpr, optn_shrn_iscd, optn_prpr, optn_prdy_vrss, prdy_vrss_sign, optn_prdy_ctrt,
-    optn_bidp, optn_askp, tmvl_val, nmix_sdpr, acml_vol, seln_rsqn, shnu_rsqn, acml_tr_pbmn,
-    hts_otst_stpl_qty, otst_stpl_qty_icdc, delta_val, gama, vega, theta, rho, hts_ints_vltl,
-    invl_val, esdg, dprt, hist_vltl, hts_thpr, optn_oprc, optn_hgpr, optn_lwpr, optn_mxpr, optn_llam,
-    atm_cls_name, rgbf_vrss_icdc, total_askp_rsqn, total_bidp_rsqn,
-    futs_antc_cnpr, futs_antc_cntg_vrss, antc_cntg_vrss_sign, antc_cntg_prdy_ctrt,
+    raw_api_id, mat_date, option_type, base_date,
+    strike_prc, conv_prpr, inst_cd, prpr, prdy_vs, prdy_vs_sign, prdy_ctrt,
+    bidp, askp, time_val, idx_sdpr, acml_vol, sell_rem_qty, buy_rem_qty, acml_trade_amt,
+    otst_stpl_qty, otst_stpl_qty_chg, delta, gamma, vega, theta, rho, ints_vltl,
+    intrinsic_val, disparity, disparity_rate, hist_volatility, thpr, oprc, hgpr, lwpr, mxpr, llam,
+    atm_class_name, prev_diff_chg, total_ask_qty, total_bid_qty,
+    antc_cnpr, antc_cntg_vs, antc_cntg_vs_sign, antc_cntg_prdy_ctrt,
     inserted_at
 )
 SELECT
@@ -61,4 +61,5 @@ FROM
     json_each(r.data, '$.output1') AS json_each -- 콜옵션은 output1
 WHERE
     r.response_type = 'FHPIF05030100'
-    AND r.symbol ='ALL';
+    AND r.symbol ='ALL'
+    AND r.created_at  LIKE '2025-08-01%';

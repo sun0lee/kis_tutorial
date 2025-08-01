@@ -2,37 +2,27 @@ import requests
 import json
 from typing import Dict, Any, Optional
 from pykis import KisAuth, PyKis
-from core import AUTH_CONFIG_PATH
 
 class KisClient:
-    def __init__(self, credentials: Optional[Dict[str, Any]] = None):
+    def __init__(self, credentials: [Dict[str, Any]]):
         print("[KIS Client] KisClient 인스턴스 초기화 및 인증 정보 로드...")
 
         try:
-            if credentials is None:
-                auth_config = KisAuth.load(AUTH_CONFIG_PATH)
-                self.auth = PyKis(auth_config, keep_token=True)
-                self.app_key = auth_config.appkey
-                self.app_secret = auth_config.secretkey
-                self._access_token = self.auth.token.token
+            id = credentials.get('id')
+            account = credentials.get('account')
+            appkey = credentials.get('appkey')
+            secretkey = credentials.get('secretkey')
 
-            else:
-                id = credentials.get('id')
-                account = credentials.get('account')
-                appkey = credentials.get('appkey')
-                secretkey = credentials.get('secretkey')
+            self.auth = PyKis(
+                id=id,
+                account=account,
+                appkey=appkey,
+                secretkey=secretkey,
+                keep_token=True
+            )
 
-                self.auth = PyKis(
-                    id=id,
-                    account=account,
-                    appkey=appkey,
-                    secretkey=secretkey,
-                    keep_token=True
-                )
-
-                self.app_key = appkey
-                self.app_secret = secretkey
-                self._access_token = self.auth.token.token
+            self.app_key = appkey
+            self.app_secret = secretkey
 
             print("[KIS Client] 인증 정보 로드 성공.")
 
@@ -42,7 +32,7 @@ class KisClient:
 
     @property
     def access_token(self):
-        return self._access_token
+        return self.auth.token.token
 
     def _call_api(
             self,

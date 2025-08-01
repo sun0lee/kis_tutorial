@@ -1,13 +1,13 @@
 INSERT OR REPLACE INTO RST_FHKIF03020200_01 (
     raw_api_id,
-    req_cond_mrkt_div_code, req_input_iscd, req_hour_cls_code, req_pw_data_incu_yn, req_fake_tick_incu_yn, req_input_date_1, req_input_hour_1,
+    mrkt_div_cd, inst_cd, hour_cd, past_data_yn, fake_tick_yn, start_date, start_hour,
     base_date,
-    futs_prdy_vrss, prdy_vrss_sign, futs_prdy_ctrt, futs_prdy_clpr, prdy_nmix,
-    acml_vol, acml_tr_pbmn, hts_kor_isnm, futs_prpr, futs_shrn_iscd, prdy_vol,
-    futs_mxpr, futs_llam, futs_oprc, futs_hgpr, futs_lwpr,
-    futs_prdy_oprc, futs_prdy_hgpr, futs_prdy_lwpr, futs_askp, futs_bidp,
-    basis, kospi200_nmix, kospi200_prdy_vrss, kospi200_prdy_ctrt, kospi200_prdy_vrss_sign,
-    hts_otst_stpl_qty, otst_stpl_qty_icdc, tday_rltv, hts_thpr, dprt,
+    prdy_vs, prdy_vs_sign, prdy_ctrt, prdy_clpr, prdy_idx,
+    acml_vol, acml_trade_amt, kor_isnm, prpr, shrn_iscd, prdy_vol,
+    mxpr, llam, oprc, hgpr, lwpr,
+    prdy_oprc, prdy_hgpr, prdy_lwpr, askp, bidp,
+    basis, kospi200_idx, kospi200_prdy_vs, kospi200_prdy_ctrt, kospi200_prdy_vs_sign,
+    otst_stpl_qty, otst_stpl_qty_chg, today_rel_strength, thpr, disparity_rate,
     inserted_at
 )
 SELECT

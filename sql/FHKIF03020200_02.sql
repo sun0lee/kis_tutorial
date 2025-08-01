@@ -1,9 +1,9 @@
 INSERT OR REPLACE INTO RST_FHKIF03020200_02 (
     raw_api_id,
-    req_cond_mrkt_div_code, req_input_iscd, req_hour_cls_code,
+    mrkt_div_cd, inst_cd, hour_cd,
     base_date,
-    stck_bsop_date, stck_cntg_hour, futs_prpr, futs_oprc, futs_hgpr, futs_lwpr,
-    cntg_vol, acml_tr_pbmn,
+    bsop_date, cntg_hour, prpr, oprc, hgpr, lwpr,
+    cntg_vol, acml_trade_amt,
     inserted_at
 )
 SELECT
