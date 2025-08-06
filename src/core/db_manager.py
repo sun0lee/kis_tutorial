@@ -5,6 +5,7 @@ from typing  import List, Dict, Any, Optional
 from datetime import datetime
 from core import DATA_PATH, SQL_DIR
 from cryptography.fernet import Fernet
+import pytz # pytz 라이브러리 임포트
 
 MST_API_INST_TABLE = "mst_api_inst"
 MST_API_JOB_TABLE = "mst_api_job"
@@ -164,7 +165,11 @@ class DatabaseManager:
         conn = self._get_connection()
         cursor = conn.cursor()
         try:
-            timestamp = datetime.now().isoformat()
+            utc_now = datetime.utcnow()
+            kst_timezone = pytz.timezone('Asia/Seoul') # 한국 시간대 정의
+            kst_now = utc_now.replace(tzinfo=pytz.utc).astimezone(kst_timezone) # UTC를 KST로 변환
+            timestamp = kst_now.isoformat() # KST로 변환된 시간을 ISO 형식으로 저장
+
             json_str = json.dumps(raw_data, ensure_ascii=False, indent=2)
             json_str_params = json.dumps(params, ensure_ascii=False, indent=2)
 
