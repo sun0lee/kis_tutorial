@@ -17,21 +17,23 @@ def initialize_application():
     print("[Initializer] 애플리케이션 초기화 시작...")
 
     # 1. DB 암호화 키 로드 및 유효성 검사
-    encryption_key_str = os.environ.get("DB_ENCRYPTION_KEY")
-    encryption_key_bytes = None
-    if encryption_key_str:
-        encryption_key_bytes = encryption_key_str.encode('utf-8')
-    else:
-        print("\n--- DB 암호화 키 설정 ---")
-        print("환경 변수 'DB_ENCRYPTION_KEY'가 설정되지 않았습니다.")
-        print("이 키는 DB에 저장된 API 정보를 복호화하는 데 사용됩니다.")
+    encryption_key_str = None
 
-        user_input_key = input("DB 암호화 키를 입력하세요 (setup_credentials.py 실행 시 사용한 키, 또는 비워두면 암호화 비활성화): ")
-        if user_input_key:
-            encryption_key_bytes = user_input_key.encode('utf-8')
-        else:
-            print("경고: 암호화 키가 제공되지 않아 암호화 기능이 비활성화됩니다. API 정보가 평문으로 저장/로드될 수 있습니다.")
-        print("-----------------------------\n")
+    # 1) 먼저 커맨드 라인 인수로 키를 받습니다.
+    if len(sys.argv) > 1:
+        encryption_key_str = sys.argv[1]
+
+    # 2) 커맨드 라인에 키가 없으면 환경 변수에서 찾습니다.
+    if not encryption_key_str:
+        encryption_key_str = os.environ.get("DB_ENCRYPTION_KEY")
+
+    # 3) 두 방법 모두 실패하면 프로그램을 종료합니다.
+    if not encryption_key_str:
+        print("[Initializer] DB 암호화 키가 제공되지 않았습니다. 프로그램을 종료합니다.")
+        sys.exit(1)
+
+    encryption_key_bytes = encryption_key_str.encode('utf-8')
+
 
     # 2. DatabaseManager 인스턴스 초기화 (암호화 키 전달)
     db = None

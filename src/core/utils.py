@@ -12,7 +12,7 @@ def is_market_open() -> bool:
         return False
 
     # 시장 개장 시간 (08:30) 및 마감 시간 (15:45) 설정
-    market_open_time = now.replace(hour=8, minute=30, second=0, microsecond=0)
+    market_open_time = now.replace(hour=8, minute=20, second=0, microsecond=0)
     market_close_time = now.replace(hour=15, minute=45, second=0, microsecond=0)
 
     # 현재 시간이 개장 시간과 마감 시간 사이에 있는지 확인
