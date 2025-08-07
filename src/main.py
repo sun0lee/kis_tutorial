@@ -48,7 +48,7 @@ def main():
 
     # 메인 스케줄링 루프
     while True:
-        now_utc = datetime.datetime.utcnow() # 현재 UTC 시간 가져오기
+        now_utc = datetime.datetime.now(pytz.utc)
         current_kst_datetime = now_utc.astimezone(KST) # 현재 KST 시간
 
         # 1. 시장 개장 여부 확인 및 종료 조건
