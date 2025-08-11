@@ -17,7 +17,7 @@ def main():
     print(f"[{datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')}] 스케줄러 시작 시 초기 데이터 수집 시작...")
     try:
         manager.per_symbol_jobs()
-        # manager.board_all_jobs()
+        manager.board_all_jobs()
         # manager.transform_data()
 
         print(f"[{datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')}] 초기 데이터 수집 완료.")
@@ -39,7 +39,7 @@ def main():
         print(f"[{now.strftime('%Y-%m-%d %H:%M:%S')}] 시장 마감 또는 주말입니다. 스케줄러를 종료합니다.")
         sys.exit(0)
 
-    data_collecting(manager, INTERVAL_MINUTES)
+    data_collecting(manager, INTERVAL_MINUTES, market_open_dt_today, market_close_dt_today)
 
 
 if __name__ == "__main__":

@@ -32,33 +32,33 @@ def get_next_scheduled_time(current_time: datetime.datetime, interval_minutes: i
     return next_time
 
 
-def data_collecting(manager, interval_minutes: int):
-    market_close_time_obj = datetime.time(15, 45, 0)
-    market_close_dt_today = datetime.datetime.now().replace(hour=market_close_time_obj.hour,
-                                                            minute=market_close_time_obj.minute, second=0,
-                                                            microsecond=0)
+def data_collecting(manager, interval_minutes: int, market_open_dt: datetime, market_close_dt: datetime):
 
     initial_now = datetime.datetime.now()
-    next_run_time = get_next_scheduled_time(initial_now, interval_minutes)
 
-    market_open_dt_today = initial_now.replace(hour=8, minute=30, second=0, microsecond=0)
+    if initial_now.time() == market_open_dt.time():
+        print(f"[{initial_now.strftime('%Y-%m-%d %H:%M:%S')}] 시장 개장 시간입니다. 데이터 수집을 시작합니다.")
+        manager.per_symbol_jobs()
+        manager.board_all_jobs()
+        print(f"[{datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')}] 데이터 수집 완료.")
 
-    if next_run_time < market_open_dt_today:
-        next_run_time = market_open_dt_today
+        next_run_time = initial_now + datetime.timedelta(minutes=interval_minutes)
+    else:
+        next_run_time = get_next_scheduled_time(initial_now, interval_minutes)
 
     print(f"초기 목표 실행 시간: {next_run_time.strftime('%Y-%m-%d %H:%M:%S')}")
 
     while True:
         now = datetime.datetime.now()
 
-        if now.weekday() >= 5 or now.time() >= market_close_time_obj:
+        if now.weekday() >= 5 or now >= market_close_dt:
             print(f"[{now.strftime('%Y-%m-%d %H:%M:%S')}] 시장 마감 또는 주말입니다. 스케줄러를 종료합니다.")
             sys.exit(0)
 
         while now >= next_run_time:
             next_run_time += datetime.timedelta(minutes=interval_minutes)
 
-            if next_run_time >= market_close_dt_today:
+            if next_run_time >= market_close_dt:
                 print(f"[{now.strftime('%Y-%m-%d %H:%M:%S')}] 다음 목표 실행 시간이 시장 마감 이후입니다. 더 이상 스케줄링하지 않습니다.")
                 sys.exit(0)
 
