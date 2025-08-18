@@ -35,14 +35,15 @@ def get_next_scheduled_time(current_time: datetime.datetime, interval_minutes: i
 def data_collecting(manager, interval_minutes: int, market_open_dt: datetime, market_close_dt: datetime):
 
     initial_now = datetime.datetime.now()
+    initial_now_rounded = initial_now.replace(second=0, microsecond=0)
 
-    if initial_now.time() == market_open_dt.time():
+    if initial_now_rounded == market_open_dt.replace(second=0, microsecond=0):
         print(f"[{initial_now.strftime('%Y-%m-%d %H:%M:%S')}] 시장 개장 시간입니다. 데이터 수집을 시작합니다.")
         manager.per_symbol_jobs()
         manager.board_all_jobs()
         print(f"[{datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')}] 데이터 수집 완료.")
-
         next_run_time = initial_now + datetime.timedelta(minutes=interval_minutes)
+
     else:
         next_run_time = get_next_scheduled_time(initial_now, interval_minutes)
 
