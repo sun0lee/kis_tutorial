@@ -37,6 +37,8 @@ def data_collecting(manager, interval_minutes: int, market_open_dt: datetime, ma
     initial_now = datetime.datetime.now()
     initial_now_rounded = initial_now.replace(second=0, microsecond=0)
 
+    print("2025-08-18 코드수정확인")
+
     if initial_now_rounded == market_open_dt.replace(second=0, microsecond=0):
         print(f"[{initial_now.strftime('%Y-%m-%d %H:%M:%S')}] 시장 개장 시간입니다. 데이터 수집을 시작합니다.")
         manager.per_symbol_jobs()
