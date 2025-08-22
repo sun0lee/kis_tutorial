@@ -1,4 +1,4 @@
-INSERT INTO mst_inst (
+INSERT INTO mst_api_inst (
     shrn_iscd,
     stnd_iscd,
     kor_name,
