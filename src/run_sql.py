@@ -7,6 +7,7 @@ from core.db_manager import DatabaseManager
 if __name__ == "__main__":
 
     # sql_file_name = "trn_inst.sql"
+    # sql_file_name = "update mst_pf_pos.sql"
     sql_file_name = "trn_pf_pos_val.sql"
     db_manager = DatabaseManager()
 

@@ -22,8 +22,6 @@ INSERT INTO trn_pf_pos_val (
     vega,
     theta,
     rho,
---     signed_market_val,
---     signed_trade_amt,
     evaluated_at
 )
 SELECT
@@ -33,8 +31,8 @@ SELECT
     T4.base_date,
     T4.entry_at,
     T4.pos_type,
-    T4.signed_trade_amt as entry_prc,
-    T4.cur_prc,
+    T4.signed_entry_prc as entry_prc,
+    T4.signed_cur_prc as cur_prc,
     T4.volume,
     T4.trade_amt,
     T4.strike_prc,
@@ -42,7 +40,7 @@ SELECT
     T4.impl_val,
     T4.time_val,
     T4.theory_prc,
-    T4.signed_market_val as market_val,
+    T4.market_val,
     T4.pnl,
     T4.impl_vol,
     T4.delta,
@@ -50,8 +48,6 @@ SELECT
     T4.vega,
     T4.theta,
     T4.rho,
---     T4.signed_market_val,
---     T4.signed_trade_amt,
     T4.evaluated_at
 FROM (
     SELECT
@@ -61,8 +57,6 @@ FROM (
         base_date,
         entry_at,
         pos_type,
-        entry_prc,
-        cur_prc,
         qty AS volume,
         (qty * cur_prc) AS trade_amt,
         strike_prc,
@@ -78,8 +72,8 @@ FROM (
         vega * pnl_sign AS vega,
         theta * pnl_sign AS theta,
         rho * pnl_sign AS rho,
-        (qty * cur_prc) * pnl_sign AS signed_market_val,
-        (qty * entry_prc) * pnl_sign AS signed_trade_amt,
+        (qty * cur_prc) * pnl_sign AS signed_cur_prc,
+        (qty * entry_prc) * pnl_sign AS signed_entry_prc,
         strftime('%Y-%m-%dT%H:%M:%S', 'now') AS evaluated_at
     FROM (
         SELECT
@@ -113,7 +107,7 @@ FROM (
             ON T1.inst_cd = T2.inst_cd
         WHERE
             T1.is_active = 'Y'
-            AND strftime('%Y-%m-%d %H:%M', T2.base_date) > '2025-07-28 09:00'
+            AND T2.base_date > T1.entry_at
     ) AS T3
 ) AS T4
 LEFT JOIN trn_pf_pos_val AS T5
@@ -121,4 +115,5 @@ LEFT JOIN trn_pf_pos_val AS T5
     AND T4.pos_id = T5.pos_id
     AND T4.base_date = strftime('%Y-%m-%d %H:%M', T5.base_date)
 WHERE
-    T5.pos_id IS NULL;
+    T5.pos_id IS NULL
+order by t4.pf_id, t4.base_date, t4.pos_id ;

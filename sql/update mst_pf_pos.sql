@@ -15,4 +15,5 @@ WHERE EXISTS (
     WHERE
         trn_inst.inst_cd = mst_pf_pos.inst_cd
         AND strftime('%Y-%m-%d %H:%M', trn_inst.base_date) = strftime('%Y-%m-%d %H:%M', mst_pf_pos.entry_at)
-);
+)
+AND is_active='Y';
