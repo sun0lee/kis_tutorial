@@ -2,6 +2,8 @@ from typing import Optional, List, Dict, Any
 from core.db_manager import DatabaseManager
 from core.api_client import KisClient
 import json
+import datetime
+from dateutil.relativedelta import relativedelta
 
 class MarketDataManager:
     def __init__(self, kis_client: KisClient
@@ -31,7 +33,11 @@ class MarketDataManager:
             base_url = config["base_url"]
             endpoint = config["endpoint"]
             tr_id = config["tr_id"]
-            params=config["params"]
+            fixed_params = {
+                param_meta['param_key']: param_meta['param_value']
+                for param_meta in config["params"] if not param_meta['is_dynamic']
+            }
+            # params=config["params"]
 
             for inst in inst_list:
                 cur_code = inst['shrn_iscd']
@@ -40,15 +46,51 @@ class MarketDataManager:
 
                 params_for_call = {
                     'FID_INPUT_ISCD': cur_code,
-                    'FID_COND_MRKT_DIV_CODE': cur_mrkt_div
+                    'FID_COND_MRKT_DIV_CODE': cur_mrkt_div,
+                    **fixed_params,
                 }
-                for param_meta in params:
-                    param_key = param_meta['param_key']
-                    param_value = param_meta['param_value']
-                    params_for_call[param_key] = param_value
+                # 20250902 과거 데이터 가져올때 조회기간 옵션만기에 따라 동적으로 처리하기
+                if tr_id == 'FHKIF03020100' :
+                    try:
+                        # 종목명에서 만기 년월 추출 (예: 'C 202501 332.5' -> '202501')
+                        expiry_ym = cur_kor_name.split(' ')[1]
 
-                print(
-                    f"  --- 종목: {cur_kor_name} ({cur_code}, 시장 구분: {cur_mrkt_div}) (작업: {config['job_name']}) 데이터 처리 중 ---")
+                        # 만기일 계산 로직: 해당 월의 셋째 목요일
+                        year = int(expiry_ym[:4])
+                        month = int(expiry_ym[4:])
+                        # 만기일이 포함된 달의 첫 번째 날짜
+                        first_day_of_month = datetime.date(year, month, 1)
+                        # 만기일인 목요일을 찾음
+                        if first_day_of_month.weekday() <= 3:  # 0=월, 1=화, 2=수, 3=목
+                            expiry_date = first_day_of_month + datetime.timedelta(
+                                days=(3 - first_day_of_month.weekday()) + 14)
+                        else:
+                            expiry_date = first_day_of_month + datetime.timedelta(
+                                days=(10 - first_day_of_month.weekday()) + 14)
+
+                        expiry_date_str = expiry_date.strftime('%Y%m%d')
+
+                        # 조회 시작 날짜 계산 (만기일 2개월 전)
+                        start_date = expiry_date - relativedelta(months=2)
+                        start_date_str = start_date.strftime('%Y%m%d')
+
+                        params_for_call['FID_INPUT_DATE_1'] = start_date_str
+                        params_for_call['FID_INPUT_DATE_2'] = expiry_date_str
+
+                    except (ValueError, IndexError):
+                        print(f"  --- 경고: 종목명 '{cur_kor_name}'에서 만기일 정보를 파싱할 수 없습니다. 기존 고정 기간을 사용합니다.")
+                        # 동적 파라미터가 존재한다면 고정값으로 설정
+                        for param_meta in config["params"]:
+                            if param_meta['is_dynamic']:
+                                params_for_call[param_meta['param_key']] = param_meta['param_value']
+                else:
+                    # 옵션이 아닌 다른 종목이거나, 다른 TR_ID인 경우 고정 파라미터 사용
+                    for param_meta in config["params"]:
+                        if param_meta['is_dynamic']:
+                            params_for_call[param_meta['param_key']] = param_meta['param_value']
+
+                print(f"  --- 종목: {cur_kor_name} ({cur_code}, 시장 구분: {cur_mrkt_div}) (작업: {config['job_name']}) 데이터 처리 중 ---")
+                print(f"  --- 조회 기간: {params_for_call.get('FID_INPUT_DATE_1')} ~ {params_for_call.get('FID_INPUT_DATE_2')} ---")
 
                 data = self.kis_client._call_api(base_url,endpoint,tr_id,params_for_call)
 
