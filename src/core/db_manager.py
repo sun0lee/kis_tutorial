@@ -136,7 +136,7 @@ class DatabaseManager:
         try:
             conn = self._get_connection()
             cursor = conn.cursor()
-            query = f"SELECT shrn_iscd, mrkt_div, kor_name FROM {MST_API_INST_TABLE} WHERE use_yn = 'Y'"
+            query = f"SELECT shrn_iscd, mrkt_div, kor_name, info_type FROM {MST_API_INST_TABLE} WHERE use_yn = 'Y'"
             cursor.execute(query)
             rows = cursor.fetchall()
 

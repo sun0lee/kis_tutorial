@@ -3,6 +3,7 @@ from core.db_manager import DatabaseManager
 from core.api_client import KisClient
 import json
 import datetime
+import time
 from dateutil.relativedelta import relativedelta
 
 class MarketDataManager:
@@ -39,7 +40,8 @@ class MarketDataManager:
             }
             # params=config["params"]
 
-            for inst in inst_list:
+            # for inst in inst_list:
+            for idx, inst in enumerate(inst_list, start=1):
                 cur_code = inst['shrn_iscd']
                 cur_mrkt_div = inst['mrkt_div']
                 cur_kor_name = inst['kor_name']
@@ -49,37 +51,67 @@ class MarketDataManager:
                     'FID_COND_MRKT_DIV_CODE': cur_mrkt_div,
                     **fixed_params,
                 }
-                # 20250902 과거 데이터 가져올때 조회기간 옵션만기에 따라 동적으로 처리하기
-                if tr_id == 'FHKIF03020100' :
+
+                if tr_id == 'FHKIF03020100':
                     try:
-                        # 종목명에서 만기 년월 추출 (예: 'C 202501 332.5' -> '202501')
-                        expiry_ym = cur_kor_name.split(' ')[1]
+                        option_type = inst['info_type']
 
-                        # 만기일 계산 로직: 해당 월의 셋째 목요일
-                        year = int(expiry_ym[:4])
-                        month = int(expiry_ym[4:])
-                        # 만기일이 포함된 달의 첫 번째 날짜
-                        first_day_of_month = datetime.date(year, month, 1)
-                        # 만기일인 목요일을 찾음
-                        if first_day_of_month.weekday() <= 3:  # 0=월, 1=화, 2=수, 3=목
+                        start_date = None
+                        expiry_date = None
+
+                        if option_type in ('5', '6'):  # 월물 옵션
+                            # 종목명: "C 200703 197.5"
+                            # 두 번째 요소가 만기 년월 정보
+                            expiry_info = cur_kor_name.split(' ')[1]
+                            year = int(expiry_info[:4])
+                            month = int(expiry_info[4:])
+
+                            # 만기일 계산 로직 (셋째 목요일)
+                            first_day_of_month = datetime.date(year, month, 1)
+                            # 목요일(3)을 찾기 위해 요일 차이 계산
+                            days_to_thursday = (3 - first_day_of_month.weekday() + 7) % 7
+                            expiry_date = first_day_of_month + datetime.timedelta(days=days_to_thursday + 14)
+
+                            # 조회 시작일 계산 (2개월 전)
+                            start_date = expiry_date - relativedelta(months=2)
+
+                        elif option_type in ('L', 'M'):  # 위클리 옵션
+                            # 종목명: "위클리 C 2406W3 357.5"
+                            # 세 번째 요소가 만기 주차 정보
+                            expiry_info = cur_kor_name.split(' ')[2]
+                            year = int('20' + expiry_info[0:2])  # '24' -> 2024
+                            month = int(expiry_info[2:4])  # '06' -> 6
+                            week_number = int(expiry_info[5])  # 'W3' -> 3
+
+                            # 만기 요일 설정
+                            if '(월)' in cur_kor_name:
+                                target_weekday = 0  # 월요일
+                            elif '(목)' in cur_kor_name:
+                                target_weekday = 3  # 목요일
+                            else:
+                                # 괄호 안의 요일 정보가 없는 경우 예외 처리
+                                raise ValueError("종목명에 위클리 옵션 만기 요일 정보가 없습니다.")
+
+                            # 해당 월의 n번째 만기 요일 계산
+                            first_day_of_month = datetime.date(year, month, 1)
+                            # 해당 월의 첫 번째 만기 요일을 찾음
+                            days_to_target_day = (target_weekday - first_day_of_month.weekday() + 7) % 7
+                            # n번째 만기일 계산
                             expiry_date = first_day_of_month + datetime.timedelta(
-                                days=(3 - first_day_of_month.weekday()) + 14)
+                                days=days_to_target_day + (week_number - 1) * 7)
+
+                            # 조회 시작일 계산 (만기일 2주일 전)
+                            start_date = expiry_date - relativedelta(weeks=2)
+
+                        # 조회 기간 파라미터 설정
+                        if start_date and expiry_date:
+                            params_for_call['FID_INPUT_DATE_1'] = start_date.strftime('%Y%m%d')
+                            params_for_call['FID_INPUT_DATE_2'] = expiry_date.strftime('%Y%m%d')
                         else:
-                            expiry_date = first_day_of_month + datetime.timedelta(
-                                days=(10 - first_day_of_month.weekday()) + 14)
-
-                        expiry_date_str = expiry_date.strftime('%Y%m%d')
-
-                        # 조회 시작 날짜 계산 (만기일 2개월 전)
-                        start_date = expiry_date - relativedelta(months=2)
-                        start_date_str = start_date.strftime('%Y%m%d')
-
-                        params_for_call['FID_INPUT_DATE_1'] = start_date_str
-                        params_for_call['FID_INPUT_DATE_2'] = expiry_date_str
+                            raise ValueError("만기일 또는 시작일 계산 오류")
 
                     except (ValueError, IndexError):
-                        print(f"  --- 경고: 종목명 '{cur_kor_name}'에서 만기일 정보를 파싱할 수 없습니다. 기존 고정 기간을 사용합니다.")
-                        # 동적 파라미터가 존재한다면 고정값으로 설정
+                        print(f"  --- 경고: 종목명 '{cur_kor_name}'에서 만기일 정보를 파싱할 수 없거나, 유효하지 않은 옵션 타입입니다. 고정 기간을 사용합니다.")
                         for param_meta in config["params"]:
                             if param_meta['is_dynamic']:
                                 params_for_call[param_meta['param_key']] = param_meta['param_value']
@@ -102,6 +134,11 @@ class MarketDataManager:
                     print(f"    API 호출 실패: 종목코드 {cur_code} (작업: {config['job_name']}) 데이터를 적재하지 않습니다.")
 
                 print(f"  --- 종목 코드: {cur_code} (작업: {config['job_name']}) 데이터 처리 완료 ---\n")
+
+#  20회/초당 호출가능
+                if idx % 20 == 0:  # 20회 호출할 때마다
+                    print("  --- 20회 호출 완료, 1초 대기 ---")
+                    time.sleep(1)
 
             print(f"\n============================================================")
             print(f"=== API Job '{config['job_name']}' 처리 완료 ===")
