@@ -138,7 +138,8 @@ class MarketDataManager:
                     print(f"    API 호출 실패: 종목코드 {cur_code} (작업: {config['job_name']}) 데이터를 적재하지 않습니다.")
 
                 print(f"  --- 종목 코드: {cur_code} (작업: {config['job_name']}) 데이터 처리 완료 ---\n")
-
+                
+                time.sleep(self.API_CALL_INTERVAL)
             print(f"\n============================================================")
             print(f"=== API Job '{config['job_name']}' 처리 완료 ===")
             print(f"============================================================\n")
@@ -203,7 +204,7 @@ class MarketDataManager:
                     print(f"      API 호출 실패: 일반 'BOARD_ALL' 유형 (작업: {config['job_name']}) 데이터를 적재하지 않습니다.")
 
                 print(f"  --- 전체 시장 현황 (작업: {config['job_name']}) 데이터 처리 완료 ---\n")
-
+                time.sleep(self.API_CALL_INTERVAL)
             print(f"\n============================================================")
             print(f"=== API Job '{config['job_name']}' 처리 완료 ===")
             print("============================================================\n")
