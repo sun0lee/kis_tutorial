@@ -127,8 +127,8 @@ class MarketDataManager:
                 print(f"  --- 종목: {cur_kor_name} ({cur_code}, 시장 구분: {cur_mrkt_div}) (작업: {config['job_name']}) 데이터 처리 중 ---")
                 print(f"  --- 조회 기간: {params_for_call.get('FID_INPUT_DATE_1')} ~ {params_for_call.get('FID_INPUT_DATE_2')} ---")
 
-                data = self.kis_client._call_api(base_url,endpoint,tr_id,params_for_call)
                 time.sleep(self.API_CALL_INTERVAL)
+                data = self.kis_client._call_api(base_url,endpoint,tr_id,params_for_call)
 
                 if data:
                     print(f"    [API 응답]: {data.get('msg1') if 'msg1' in data else '데이터 수신 완료'}")
@@ -192,8 +192,8 @@ class MarketDataManager:
                 if dynamic_param_key:
                     print(f"    동적 파라미터 '{dynamic_param_key}': '{dynamic_value}' 적용")
 
-                data = self.kis_client._call_api(base_url, endpoint, tr_id, params_for_call)
                 time.sleep(self.API_CALL_INTERVAL)
+                data = self.kis_client._call_api(base_url, endpoint, tr_id, params_for_call)
 
                 if data:
                     print(f"      [API 응답]: {data.get('msg1') if 'msg1' in data else '데이터 수신 완료'}")
