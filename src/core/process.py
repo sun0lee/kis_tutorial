@@ -7,6 +7,9 @@ import time
 from dateutil.relativedelta import relativedelta
 
 class MarketDataManager:
+    API_CALL_INTERVAL = 0.4  # 신규 App Key(3 TPS)
+    # API_CALL_INTERVAL = 0.06  # 기본(18 TPS)
+
     def __init__(self, kis_client: KisClient
                     , db_manager: DatabaseManager):
         self.kis_client = kis_client
@@ -125,6 +128,7 @@ class MarketDataManager:
                 print(f"  --- 조회 기간: {params_for_call.get('FID_INPUT_DATE_1')} ~ {params_for_call.get('FID_INPUT_DATE_2')} ---")
 
                 data = self.kis_client._call_api(base_url,endpoint,tr_id,params_for_call)
+                time.sleep(self.API_CALL_INTERVAL)
 
                 if data:
                     print(f"    [API 응답]: {data.get('msg1') if 'msg1' in data else '데이터 수신 완료'}")
@@ -134,11 +138,6 @@ class MarketDataManager:
                     print(f"    API 호출 실패: 종목코드 {cur_code} (작업: {config['job_name']}) 데이터를 적재하지 않습니다.")
 
                 print(f"  --- 종목 코드: {cur_code} (작업: {config['job_name']}) 데이터 처리 완료 ---\n")
-
-#  20회/초당 호출가능
-                if idx % 20 == 0:  # 20회 호출할 때마다
-                    print("  --- 20회 호출 완료, 1초 대기 ---")
-                    time.sleep(1)
 
             print(f"\n============================================================")
             print(f"=== API Job '{config['job_name']}' 처리 완료 ===")
@@ -194,6 +193,7 @@ class MarketDataManager:
                     print(f"    동적 파라미터 '{dynamic_param_key}': '{dynamic_value}' 적용")
 
                 data = self.kis_client._call_api(base_url, endpoint, tr_id, params_for_call)
+                time.sleep(self.API_CALL_INTERVAL)
 
                 if data:
                     print(f"      [API 응답]: {data.get('msg1') if 'msg1' in data else '데이터 수신 완료'}")
