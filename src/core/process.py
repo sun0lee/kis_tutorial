@@ -15,6 +15,16 @@ class MarketDataManager:
         self.kis_client = kis_client
         self.db_manager = db_manager
 
+    # 처리 간격 조정 
+    def throttle(self):
+        now = time.time()
+        if not hasattr(self, "last_call_time"):
+            self.last_call_time = 0
+        wait = self.API_CALL_INTERVAL - (now - self.last_call_time)
+        if wait > 0:
+            time.sleep(wait)
+        self.last_call_time = time.time()
+
     def per_symbol_jobs(self):
 
         per_symbol_jobs = self.db_manager.get_job_list(job_type='PER_SYMBOL')
@@ -127,8 +137,10 @@ class MarketDataManager:
                 print(f"  --- 종목: {cur_kor_name} ({cur_code}, 시장 구분: {cur_mrkt_div}) (작업: {config['job_name']}) 데이터 처리 중 ---")
                 print(f"  --- 조회 기간: {params_for_call.get('FID_INPUT_DATE_1')} ~ {params_for_call.get('FID_INPUT_DATE_2')} ---")
 
-                time.sleep(self.API_CALL_INTERVAL)
+                # time.sleep(self.API_CALL_INTERVAL)
+                self.throttle()
                 data = self.kis_client._call_api(base_url,endpoint,tr_id,params_for_call)
+                time.sleep(0.1)
 
                 if data:
                     print(f"    [API 응답]: {data.get('msg1') if 'msg1' in data else '데이터 수신 완료'}")
@@ -138,8 +150,7 @@ class MarketDataManager:
                     print(f"    API 호출 실패: 종목코드 {cur_code} (작업: {config['job_name']}) 데이터를 적재하지 않습니다.")
 
                 print(f"  --- 종목 코드: {cur_code} (작업: {config['job_name']}) 데이터 처리 완료 ---\n")
-                
-                time.sleep(self.API_CALL_INTERVAL)
+
             print(f"\n============================================================")
             print(f"=== API Job '{config['job_name']}' 처리 완료 ===")
             print(f"============================================================\n")
@@ -193,8 +204,9 @@ class MarketDataManager:
                 if dynamic_param_key:
                     print(f"    동적 파라미터 '{dynamic_param_key}': '{dynamic_value}' 적용")
 
-                time.sleep(self.API_CALL_INTERVAL)
+                self.throttle()
                 data = self.kis_client._call_api(base_url, endpoint, tr_id, params_for_call)
+                time.sleep(0.1)
 
                 if data:
                     print(f"      [API 응답]: {data.get('msg1') if 'msg1' in data else '데이터 수신 완료'}")
@@ -204,7 +216,6 @@ class MarketDataManager:
                     print(f"      API 호출 실패: 일반 'BOARD_ALL' 유형 (작업: {config['job_name']}) 데이터를 적재하지 않습니다.")
 
                 print(f"  --- 전체 시장 현황 (작업: {config['job_name']}) 데이터 처리 완료 ---\n")
-                time.sleep(self.API_CALL_INTERVAL)
             print(f"\n============================================================")
             print(f"=== API Job '{config['job_name']}' 처리 완료 ===")
             print("============================================================\n")
