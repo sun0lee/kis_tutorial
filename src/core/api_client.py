@@ -2,10 +2,14 @@ import requests
 import json
 from typing import Dict, Any, Optional
 from pykis import KisAuth, PyKis
+import time
 
 class KisClient:
     def __init__(self, credentials: [Dict[str, Any]]):
         print("[KIS Client] KisClient 인스턴스 초기화 및 인증 정보 로드...")
+
+        self.last_call_time = 0
+        self.min_interval = 0.4  # 3 TPS 기준
 
         try:
             id = credentials.get('id')
@@ -34,6 +38,13 @@ class KisClient:
     def access_token(self):
         return self.auth.token.token
 
+    def throttle(self):
+        now = time.time()
+        elapsed = now - self.last_call_time
+        if elapsed < self.min_interval:
+            time.sleep(self.min_interval - elapsed)
+        self.last_call_time = time.time()
+
     def _call_api(
             self,
             base_url: str,
@@ -41,7 +52,7 @@ class KisClient:
             tr_id: str,
             params: Dict[str, Any]
     ) -> Optional[Dict[str, Any]]:
-
+        self.throttle() 
         url = f"{base_url}{endpoint}"
 
         headers = {
