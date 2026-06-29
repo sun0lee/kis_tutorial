@@ -9,7 +9,7 @@ class KisClient:
         print("[KIS Client] KisClient 인스턴스 초기화 및 인증 정보 로드...")
 
         self.last_call_time = 0
-        self.min_interval = 0.4  # 3 TPS 기준
+        self.min_interval = 1 
 
         try:
             id = credentials.get('id')
