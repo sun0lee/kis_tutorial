@@ -42,7 +42,9 @@ class KisClient:
         now = time.time()
         elapsed = now - self.last_call_time
         if elapsed < self.min_interval:
-            time.sleep(self.min_interval - elapsed)
+            wait = self.min_interval - elapsed
+            print(f"[Throttle] {wait:.3f}초 대기")
+            time.sleep(wait)
         self.last_call_time = time.time()
 
     def _call_api(
